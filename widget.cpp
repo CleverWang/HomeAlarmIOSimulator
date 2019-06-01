@@ -88,7 +88,7 @@ void Widget::onNewConnection()
     // 需要先关闭上一个连接，再开始下一个连接
     if (this->tcpSocket_ != nullptr)
     {
-        
+        this->cmdHelper.clearReceived();
         this->closeConnection();
     }
     
