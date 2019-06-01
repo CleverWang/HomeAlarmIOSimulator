@@ -1,6 +1,6 @@
 ﻿#include "keycmd.h"
 
-KeyCMD::KeyCMD(const Device * const device) :
+KeyCMD::KeyCMD(Device * device) :
     CMD(device)
 {
     

@@ -7,9 +7,10 @@
 class SwitchCMD : public CMD
 {
 public:
-    SwitchCMD(const Device * const device, Device::SwitchValue switchValue);
+    SwitchCMD(Device * device, Device::SwitchValue switchValue);
     
     QString toQStringCMD() const override;
+    void execute() override;
 protected:
     // 开关型设备的值
     Device::SwitchValue switchValue_;

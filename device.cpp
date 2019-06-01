@@ -9,6 +9,11 @@ Device::Device(Device::DeviceType deviceType, Device::DeviceId deviceId, QObject
     
 }
 
+Device::~Device()
+{
+    
+}
+
 Device::DeviceType Device::deviceType() const
 {
     return deviceType_;
@@ -37,4 +42,24 @@ QObject *Device::device() const
 void Device::setDevice(QObject *device)
 {
     device_ = device;
+}
+
+void Device::executeCMD()
+{
+    
+}
+
+void Device::executeCMD(Device::SwitchValue)
+{
+    
+}
+
+void Device::executeCMD(double)
+{
+    
+}
+
+void Device::executeCMD(const QString &)
+{
+    
 }

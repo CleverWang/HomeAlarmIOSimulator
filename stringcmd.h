@@ -7,9 +7,10 @@
 class StringCMD : public CMD
 {
 public:
-    StringCMD(const Device * const device, const QString &stringValue);
+    StringCMD(Device * device, const QString &stringValue);
     
     QString toQStringCMD() const override;
+    void execute() override;
     
 protected:
     // 字符串型设备的值

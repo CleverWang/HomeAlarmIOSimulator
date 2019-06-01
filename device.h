@@ -50,10 +50,17 @@ public:
         Humidity1 = 24,
         Humidity2 = 25,
         
+        // 灯
+        Light = 26,
+        
+        // LED
+        LEDGreen = 27,
+        LEDRed = 28,
+        
         // 电话
-        PhoneNum = 26,
-        PhoneType = 27,
-        PhoneArea = 28
+        PhoneNum = 29,
+        PhoneType = 30,
+        PhoneArea = 31,
     };
     
     // 开关型设备的可取值
@@ -65,6 +72,7 @@ public:
     };
     
     Device(DeviceType deviceType, DeviceId deviceId, QObject *device);
+    virtual ~Device();
     
     DeviceType deviceType() const;
     void setDeviceType(const DeviceType &deviceType);
@@ -75,13 +83,19 @@ public:
     QObject *device() const;
     void setDevice(QObject *device);
     
+    // 四种不同类型的命令执行方式，对应四种不同的设备
+    virtual void executeCMD();
+    virtual void executeCMD(SwitchValue switchValue);
+    virtual void executeCMD(double d);
+    virtual void executeCMD(const QString &string);
+    
 protected:
     DeviceType deviceType_; // 设备类型
     DeviceId deviceId_; // 设备ID
     QObject *device_; // 实际设备
     
 signals:
-    // 设备可以发送新的命令信号
+    // 设备发送新的命令信号
     void newCMD(const QString &cmd);
 };
 

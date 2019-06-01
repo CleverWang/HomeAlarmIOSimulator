@@ -8,6 +8,8 @@ class StringDevice : public Device
 {
 public:
     StringDevice(DeviceId deviceId, QObject *device);
+    
+    void executeCMD(const QString &string) override;
 };
 
 #endif // STRINGDEVICE_H

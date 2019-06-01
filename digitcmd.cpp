@@ -1,6 +1,6 @@
 ﻿#include "digitcmd.h"
 
-DigitCMD::DigitCMD(const Device * const device, double digitValue) :
+DigitCMD::DigitCMD(Device * device, double digitValue) :
     CMD(device),
     digitValue_(digitValue)
 {

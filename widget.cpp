@@ -87,7 +87,10 @@ void Widget::onNewConnection()
 {
     // 需要先关闭上一个连接，再开始下一个连接
     if (this->tcpSocket_ != nullptr)
+    {
+        
         this->closeConnection();
+    }
     
     this->tcpSocket_ = this->tcpServer_->nextPendingConnection(); // 获取一个通信socket连接
     if (this->tcpSocket_ != nullptr)
@@ -116,7 +119,8 @@ void Widget::onNewConnection()
 void Widget::onReadyRead()
 {
     QByteArray arr = this->tcpSocket_->readAll();
-    
+    Logger::getLogger() << "receive " + arr + " successed";
+    this->cmdHelper.receiveCMD(arr);
 }
 
 void Widget::initDevices()
@@ -155,6 +159,24 @@ void Widget::initDevices()
     this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneNum)] = new StringDevice(Device::DeviceId::PhoneNum, this->ui->lineEdit_phone_num);
     this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneType)] = new StringDevice(Device::DeviceId::PhoneType, this->ui->lineEdit_phone_type);
     this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneArea)] = new StringDevice(Device::DeviceId::PhoneArea, this->ui->lineEdit_phone_area);
+    
+    // 灯
+    LabelSwitchDevice *light = new LabelSwitchDevice(Device::DeviceId::Light, this->ui->label_light);
+    light->setOnPixmap(QPixmap(":/res/images/light_on.bmp"));
+    light->setOffPixmap(QPixmap(":/res/images/light_off.bmp"));
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Light)] = light;
+    
+    // LED
+    LabelSwitchDevice *ledGreen = new LabelSwitchDevice(Device::DeviceId::LEDGreen, this->ui->label_led_green);
+    ledGreen->setOnPixmap(QPixmap(":/res/images/led_green_on.bmp"));
+    ledGreen->setOffPixmap(QPixmap(":/res/images/led_green_off.bmp"));
+    this->devicesMap_[static_cast<int>(Device::DeviceId::LEDGreen)] = ledGreen;
+    LabelSwitchDevice *ledRed = new LabelSwitchDevice(Device::DeviceId::LEDRed, this->ui->label_led_red);
+    ledRed->setOnPixmap(QPixmap(":/res/images/led_red_on.bmp"));
+    ledRed->setOffPixmap(QPixmap(":/res/images/led_red_off.bmp"));
+    this->devicesMap_[static_cast<int>(Device::DeviceId::LEDRed)] = ledRed;
+    
+    this->cmdHelper.setDevicesMap(&this->devicesMap_);
 }
 
 void Widget::deleteDevices()

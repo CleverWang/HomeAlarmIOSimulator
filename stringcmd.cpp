@@ -1,6 +1,6 @@
 ﻿#include "stringcmd.h"
 
-StringCMD::StringCMD(const Device * const device, const QString &stringValue) :
+StringCMD::StringCMD(Device * device, const QString &stringValue) :
     CMD(device),
     stringValue_(stringValue)
 {
@@ -19,4 +19,9 @@ QString StringCMD::toQStringCMD() const
     output.append(CMD::stopDelimiter_);
     
     return output;
+}
+
+void StringCMD::execute()
+{
+    this->device_->executeCMD(this->stringValue_);
 }

@@ -7,7 +7,7 @@
 class DigitCMD : public CMD
 {
 public:
-    DigitCMD(const Device * const device, double digitValue);
+    DigitCMD(Device * device, double digitValue);
     
     QString toQStringCMD() const override;
     

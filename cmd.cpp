@@ -23,7 +23,7 @@ void CMD::setStopDelimiter(const QString &stopDelimiter)
     stopDelimiter_ = stopDelimiter;
 }
 
-CMD::CMD(const Device * const device) : 
+CMD::CMD(Device * device) : 
     device_(device)
 {
     
@@ -44,4 +44,9 @@ QString CMD::toQStringCMD() const
     output.append(CMD::stopDelimiter_);
     
     return output;
+}
+
+void CMD::execute()
+{
+    
 }

@@ -7,7 +7,7 @@
 class KeyCMD : public CMD
 {
 public:
-    KeyCMD(const Device * const device);
+    KeyCMD(Device * device);
     
     QString toQStringCMD() const override;
 };

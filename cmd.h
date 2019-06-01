@@ -17,12 +17,14 @@ public:
     static QString stopDelimiter();
     static void setStopDelimiter(const QString &stopDelimiter);
     
-    CMD(const Device * const device);
+    CMD(Device * device);
     
     virtual ~CMD();
     
     // 不同设备类型的命令可以override
     virtual QString toQStringCMD() const;
+    // 执行接收到的命令（将参数转发给对应设备）
+    virtual void execute();
     
 protected:
     // 起始分隔符
@@ -31,7 +33,7 @@ protected:
     static QString stopDelimiter_;
     
     // 设备
-    const Device * const device_;
+    Device * device_;
 };
 
 #endif // CMD_H
