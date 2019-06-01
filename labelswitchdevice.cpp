@@ -1,6 +1,7 @@
-#include "labelswitchdevice.h"
+﻿#include "labelswitchdevice.h"
 
-LabelSwitchDevice::LabelSwitchDevice()
+LabelSwitchDevice::LabelSwitchDevice(DeviceId deviceId, QObject *device) :
+    SwitchDevice (deviceId, device)
 {
     
 }

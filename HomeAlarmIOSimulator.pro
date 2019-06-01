@@ -25,17 +25,38 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        checkboxswitchdevice.cpp \
         cmd.cpp \
         cmdhelper.cpp \
+        device.cpp \
+        digitcmd.cpp \
+        digitdevice.cpp \
+        keycmd.cpp \
+        keydevice.cpp \
+        labelswitchdevice.cpp \
         logger.cpp \
         main.cpp \
+        stringcmd.cpp \
+        stringdevice.cpp \
+        switchcmd.cpp \
+        switchdevice.cpp \
         widget.cpp
 
 HEADERS += \
+        checkboxswitchdevice.h \
         cmd.h \
         cmdhelper.h \
         device.h \
+        digitcmd.h \
+        digitdevice.h \
+        keycmd.h \
+        keydevice.h \
+        labelswitchdevice.h \
         logger.h \
+        stringcmd.h \
+        stringdevice.h \
+        switchcmd.h \
+        switchdevice.h \
         widget.h
 
 FORMS += \

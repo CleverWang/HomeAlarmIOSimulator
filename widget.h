@@ -4,7 +4,9 @@
 #include <QWidget>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QHash>
 
+#include "device.h"
 #include "cmdhelper.h"
 
 namespace Ui {
@@ -20,10 +22,13 @@ public:
     ~Widget();
     
 private:
-    void closeConnection();
+    void initDevices();
+    void deleteDevices();
+    void setupCMDSenderDevices();
+    
     void onNewConnection();
+    void closeConnection();
     void onReadyRead();
-    void setupUISignalSlot();
     
     Ui::Widget *ui;
     
@@ -32,7 +37,9 @@ private:
     
     quint16 port_;
     
-    CMDHelper *cmdHelper;
+    QHash<int, Device*> devicesMap_;
+    
+    CMDHelper cmdHelper;
 };
 
 #endif // WIDGET_H

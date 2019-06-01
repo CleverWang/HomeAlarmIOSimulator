@@ -1,6 +1,11 @@
 ﻿#include "widget.h"
 #include "ui_widget.h"
 #include "logger.h"
+#include "keydevice.h"
+#include "checkboxswitchdevice.h"
+#include "labelswitchdevice.h"
+#include "digitdevice.h"
+#include "stringdevice.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -10,8 +15,7 @@ Widget::Widget(QWidget *parent, quint16 port) :
     ui(new Ui::Widget),
     tcpServer_(nullptr),
     tcpSocket_(nullptr),
-    port_(port),
-    cmdHelper(new CMDHelper)
+    port_(port)
 {
     ui->setupUi(this);
     
@@ -19,7 +23,8 @@ Widget::Widget(QWidget *parent, quint16 port) :
     
     Logger::getLogger().setLogToTextEdit(this->ui->textBrowser_log);
     
-    this->setupUISignalSlot();
+    this->initDevices();
+    this->setupCMDSenderDevices();
     
     // 创建TCP监听服务器
     this->tcpServer_ = new QTcpServer(this);
@@ -51,6 +56,7 @@ Widget::Widget(QWidget *parent, quint16 port) :
 Widget::~Widget()
 {
     delete ui;
+    this->deleteDevices();
     this->closeConnection();
 }
 
@@ -87,7 +93,7 @@ void Widget::onNewConnection()
     if (this->tcpSocket_ != nullptr)
     {
         // 设置新的通信socket
-        this->cmdHelper->setTcpSocket(this->tcpSocket_);
+        this->cmdHelper.setTcpSocket(this->tcpSocket_);
         
         QString ip = this->tcpSocket_->peerAddress().toString();
         quint16 port = this->tcpSocket_->peerPort();
@@ -113,160 +119,56 @@ void Widget::onReadyRead()
     
 }
 
-void Widget::setupUISignalSlot()
+void Widget::initDevices()
 {
     // 按键
-    connect(this->ui->pushButton_0, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key0));
-    });
-    connect(this->ui->pushButton_1, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key1));
-    });
-    connect(this->ui->pushButton_2, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key2));
-    });
-    connect(this->ui->pushButton_3, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key3));
-    });
-    connect(this->ui->pushButton_4, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key4));
-    });
-    connect(this->ui->pushButton_5, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key5));
-    });
-    connect(this->ui->pushButton_6, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key6));
-    });
-    connect(this->ui->pushButton_7, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key7));
-    });
-    connect(this->ui->pushButton_8, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key8));
-    });
-    connect(this->ui->pushButton_9, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::Key9));
-    });
-    connect(this->ui->pushButton_hash, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::KeyHash));
-    });
-    connect(this->ui->pushButton_star, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::KeyStar));
-    });
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key0)] = new KeyDevice(Device::DeviceId::Key0, this->ui->pushButton_0);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key1)] = new KeyDevice(Device::DeviceId::Key1, this->ui->pushButton_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key2)] = new KeyDevice(Device::DeviceId::Key2, this->ui->pushButton_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key3)] = new KeyDevice(Device::DeviceId::Key3, this->ui->pushButton_3);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key4)] = new KeyDevice(Device::DeviceId::Key4, this->ui->pushButton_4);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key5)] = new KeyDevice(Device::DeviceId::Key5, this->ui->pushButton_5);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key6)] = new KeyDevice(Device::DeviceId::Key6, this->ui->pushButton_6);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key7)] = new KeyDevice(Device::DeviceId::Key7, this->ui->pushButton_7);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key8)] = new KeyDevice(Device::DeviceId::Key8, this->ui->pushButton_8);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Key9)] = new KeyDevice(Device::DeviceId::Key9, this->ui->pushButton_9);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::KeyHash)] = new KeyDevice(Device::DeviceId::KeyHash, this->ui->pushButton_hash);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::KeyStar)] = new KeyDevice(Device::DeviceId::KeyStar, this->ui->pushButton_star);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::KeyArm)] = new KeyDevice(Device::DeviceId::KeyArm, this->ui->pushButton_arm);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::KeyDisarm)] = new KeyDevice(Device::DeviceId::KeyDisarm, this->ui->pushButton_disarm);
     
-    connect(this->ui->pushButton_arm, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::KeyArm));
-    });
-    connect(this->ui->pushButton_disarm, &QPushButton::clicked, 
-            [this]()
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::KeyType, Device::DeviceId::KeyDisarm));
-    });
+    // 传感器
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Door1)] = new CheckBoxSwitchDevice(Device::DeviceId::Door1, this->ui->checkBox_door_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Door2)] = new CheckBoxSwitchDevice(Device::DeviceId::Door2, this->ui->checkBox_door_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Infrared1)] = new CheckBoxSwitchDevice(Device::DeviceId::Infrared1, this->ui->checkBox_infrared_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Infrared2)] = new CheckBoxSwitchDevice(Device::DeviceId::Infrared2, this->ui->checkBox_infrared_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Water1)] = new CheckBoxSwitchDevice(Device::DeviceId::Water1, this->ui->checkBox_water_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Water2)] = new CheckBoxSwitchDevice(Device::DeviceId::Water2, this->ui->checkBox_water_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Smoke1)] = new DigitDevice(Device::DeviceId::Smoke1, this->ui->doubleSpinBox_smoke_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Smoke2)] = new DigitDevice(Device::DeviceId::Smoke2, this->ui->doubleSpinBox_smoke_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Temperature1)] = new DigitDevice(Device::DeviceId::Temperature1, this->ui->doubleSpinBox_temperature_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Temperature2)] = new DigitDevice(Device::DeviceId::Temperature2, this->ui->doubleSpinBox_temperature_2);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Humidity1)] = new DigitDevice(Device::DeviceId::Humidity1, this->ui->doubleSpinBox_humidity_1);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::Humidity2)] = new DigitDevice(Device::DeviceId::Humidity2, this->ui->doubleSpinBox_humidity_2);
     
-    // 开关型
-    connect(this->ui->checkBox_door_1, &QCheckBox::stateChanged, 
-            [this](int state)
+    // 电话
+    this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneNum)] = new StringDevice(Device::DeviceId::PhoneNum, this->ui->lineEdit_phone_num);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneType)] = new StringDevice(Device::DeviceId::PhoneType, this->ui->lineEdit_phone_type);
+    this->devicesMap_[static_cast<int>(Device::DeviceId::PhoneArea)] = new StringDevice(Device::DeviceId::PhoneArea, this->ui->lineEdit_phone_area);
+}
+
+void Widget::deleteDevices()
+{
+    foreach(Device *device, this->devicesMap_)
+        delete device;
+}
+
+void Widget::setupCMDSenderDevices()
+{
+    for (QHash<int, Device*>::const_iterator ci = this->devicesMap_.constBegin();
+         ci != this->devicesMap_.constEnd();
+         ++ci)
     {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Door1, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Door1, Device::SwitchValue::Off));
-    });
-    connect(this->ui->checkBox_door_2, &QCheckBox::stateChanged, 
-            [this](int state)
-    {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Door2, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Door2, Device::SwitchValue::Off));
-    });
-    connect(this->ui->checkBox_infrared_1, &QCheckBox::stateChanged, 
-            [this](int state)
-    {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Infrared1, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Infrared1, Device::SwitchValue::Off));
-    });
-    connect(this->ui->checkBox_infrared_2, &QCheckBox::stateChanged, 
-            [this](int state)
-    {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Infrared2, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Infrared2, Device::SwitchValue::Off));
-    });
-    connect(this->ui->checkBox_water_1, &QCheckBox::stateChanged, 
-            [this](int state)
-    {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Water1, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Water1, Device::SwitchValue::Off));
-    });
-    connect(this->ui->checkBox_water_2, &QCheckBox::stateChanged, 
-            [this](int state)
-    {
-        if (state == Qt::Checked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Water2, Device::SwitchValue::On));
-        else if (state == Qt::Unchecked)
-            this->cmdHelper->writeCMD(CMD(Device::DeviceType::SwitchType, Device::DeviceId::Water2, Device::SwitchValue::Off));
-    });
-    
-    // 数字型
-    connect(this->ui->doubleSpinBox_smoke_1, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Smoke1, d));
-    });
-    connect(this->ui->doubleSpinBox_smoke_2, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Smoke2, d));
-    });
-    connect(this->ui->doubleSpinBox_temperature_1, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Temperature1, d));
-    });
-    connect(this->ui->doubleSpinBox_temperature_2, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Temperature2, d));
-    });
-    connect(this->ui->doubleSpinBox_humidity_1, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Humidity1, d));
-    });
-    connect(this->ui->doubleSpinBox_humidity_2, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d)
-    {
-        this->cmdHelper->writeCMD(CMD(Device::DeviceType::DigitType, Device::DeviceId::Humidity2, d));
-    });
+        connect(ci.value(), &Device::newCMD, &this->cmdHelper, &CMDHelper::writeCMD);
+    }
 }

@@ -1,6 +1,7 @@
-#include "switchdevice.h"
+﻿#include "switchdevice.h"
 
-SwitchDevice::SwitchDevice()
+SwitchDevice::SwitchDevice(DeviceId deviceId, QObject *device) : 
+    Device(Device::DeviceType::SwitchType, deviceId, device)
 {
     
 }

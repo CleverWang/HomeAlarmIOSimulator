@@ -16,17 +16,17 @@ void CMDHelper::setTcpSocket(QTcpSocket *tcpSocket)
     tcpSocket_ = tcpSocket;
 }
 
-bool CMDHelper::writeCMD(const CMD &cmd)
+bool CMDHelper::writeCMD(const QString &cmd)
 {
     if (checkSocket() == true)
     {
-        if (this->tcpSocket_->write(cmd.toString().toStdString().c_str()) != -1)
+        if (this->tcpSocket_->write(cmd.toStdString().c_str()) != -1)
         {
-            Logger::getLogger() << "write " + cmd.toString() + " successed";
+            Logger::getLogger() << "write " + cmd + " successed";
             return true;
         }
     }
-    Logger::getLogger() << "write " + cmd.toString() + " failed";
+    Logger::getLogger() << "write " + cmd + " failed";
     return false;
 }
 
