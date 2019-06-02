@@ -38,7 +38,7 @@ QString CMD::toQStringCMD() const
 {
     QString output;
     output.append(CMD::startDelimiter_);
-    output.append(QString("%1 %2")
+    output.append(QString("%1 %2 ")
                   .arg(static_cast<int>(this->device_->deviceType()))
                   .arg(static_cast<int>(this->device_->deviceId())));
     output.append(CMD::stopDelimiter_);
